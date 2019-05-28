@@ -1,0 +1,121 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Make a sprite from a texture atlas</title>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.0.3/pixi.min.js"></script>
+    <script>
+
+    class Piece {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+    };
+    let status = [
+        [-1, -1, -1, -1, -1, -1, -1, -1],
+        [-1, -1, -1, -1, -1, -1, -1, -1],
+        [-1, -1, -1, -1, -1, -1, -1, -1],
+        [-1, -1, -1,  0,  1, -1, -1, -1],
+        [-1, -1, -1,  1,  0, -1, -1, -1],
+        [-1, -1, -1, -1, -1, -1, -1, -1],
+        [-1, -1, -1, -1, -1, -1, -1, -1],
+        [-1, -1, -1, -1, -1, -1, -1, -1]
+    ];
+    const WHITE = 0, BLACK = 1;
+    let white_pieces = [];
+    let black_pieces = [];
+    let turn = BLACK;
+    let mass_size = 100;
+
+    let Application = PIXI.Application,
+    Container = PIXI.Container,
+    loader = PIXI.Loader.shared,
+    resources = PIXI.Loader.shared.resources,
+    TextureCache = PIXI.utils.TextureCache,
+    Sprite = PIXI.Sprite,
+    Rectangle = PIXI.Rectangle;
+
+    let app = new Application({
+        width: 800,
+        height: 800,
+        antialiasing: true,
+        transparent: false,
+        resolution: 1
+    });
+
+    document.body.appendChild(app.view);
+
+    loader
+    .add([
+        "images/board.png",
+        "images/white.png",
+        "images/black.png"
+    ])
+    .load(setup);
+
+    function printArray(arr){
+        for (var i = 0; i < arr.length; i++) {
+            console.log(arr[i]);
+        }
+    }
+
+    function has_piece(piece_pos){
+        if (status[piece_pos.x][piece_pos.y] < 0){
+            status[piece_pos.x][piece_pos.y] = turn;
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    function Clicked(event) {
+        const point = event.data.getLocalPosition(this.parent);
+        let piece_pos = new PIXI.Point(Math.floor(point.x / 100), Math.floor(point.y / 100));
+        if (has_piece(piece_pos)){
+            return;
+        }
+        console.log(piece_pos.x, piece_pos.y);
+
+        if (turn == BLACK){
+            black_pieces[black_pieces.length] = new Sprite(resources["images/black.png"].texture);
+            app.stage.addChild(black_pieces[black_pieces.length-1]);
+            black_pieces[black_pieces.length-1].position.set(piece_pos.x*mass_size, piece_pos.y*mass_size);
+            //app.stage.removeChild(black_piece_poss[count-1]);
+            turn = WHITE;
+        }else if (turn == WHITE){
+            white_pieces[white_pieces.length] = new Sprite(resources["images/white.png"].texture);
+            app.stage.addChild(white_pieces[white_pieces.length-1]);
+            white_pieces[white_pieces.length-1].position.set(piece_pos.x*mass_size, piece_pos.y*mass_size);
+            //app.stage.removeChild(white_piece_poss[count-1]);
+            turn = BLACK;
+        }
+    }
+
+    function initStatus() {
+        let board = new Sprite(resources["images/board.png"].texture);
+        app.stage.addChild(board);
+        board.interactive = true;
+        board.on('click', Clicked);
+
+        white_pieces[0] = new Sprite(resources["images/white.png"].texture);
+        white_pieces[1] = new Sprite(resources["images/white.png"].texture);
+        black_pieces[0] = new Sprite(resources["images/black.png"].texture);
+        black_pieces[1] = new Sprite(resources["images/black.png"].texture);
+
+        app.stage.addChild(white_pieces[0]);
+        app.stage.addChild(black_pieces[0]);
+        app.stage.addChild(white_pieces[1]);
+        app.stage.addChild(black_pieces[1]);
+
+        white_pieces[0].position.set(3*mass_size, 3*mass_size);
+        white_pieces[1].position.set(4*mass_size, 4*mass_size);
+        black_pieces[0].position.set(3*mass_size, 4*mass_size);
+        black_pieces[1].position.set(4*mass_size, 3*mass_size);
+    }
+
+    function setup() {
+        initStatus();
+    }
+
+</script>
+</body>
