@@ -8,8 +8,8 @@
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
-        [-1, -1, -1, WHITE, BLACK, -1, -1, -1],
-        [-1, -1, -1, BLACK, WHITE, -1, -1, -1],
+        [-1, -1, -1,  0,  1, -1, -1, -1],
+        [-1, -1, -1,  1,  0, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1]
@@ -43,10 +43,165 @@
     .add([
         "images/board.png",
         "images/white.png",
-        "images/black.png"
+        "images/black.png",
+        "images/black_T.png",
+        "images/white_T.png"
     ])
     .load(setup);
 
+    /*
+    Judege if point can be put
+    */
+    function judgePoint(point){
+        if (status[point.x][point.y] >= 0){
+            return -1;
+        }
+        let direction = {
+            turn: turn,
+            playable: 0,
+            left : -1,
+            left_up : -1,
+            up : -1,
+            right_up : -1,
+            right : -1,
+            right_down : -1,
+            down : -1,
+            left_down : -1
+        };
+
+        //left
+        let x = point.x, y = point.y - 1;
+        if (y >= 0 && status[x][y] + turn == 1){ //Enenmy mass
+            y--;
+            while(y >= 0){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                y--;
+            }
+        }
+
+        //left-up
+        x = point.x - 1, y = point.y - 1;
+        if (x >= 0 && y >= 0 && status[x][y] + turn == 1){ //Enenmy mass
+            x--, y--;
+            while(x >= 0 && y >= 0){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                x--, y--;
+            }
+        }
+
+        //up
+        x = point.x - 1, y = point.y;
+        if (x >= 0 && status[x][y] + turn == 1){ //Enenmy mass
+            x--;
+            while(x >= 0){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                x--;
+            }
+        }
+
+        //right-up
+        x = point.x - 1, y = point.y + 1;
+        if (x >= 0 && y < 8 && status[x][y] + turn == 1){ //Enenmy mass
+            x--, y++;
+            while(x >= 0 && y < 8){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                x--, y++;
+            }
+        }
+
+        //right
+        x = point.x, y = point.y + 1;
+        if (y < 8 && status[x][y] + turn == 1){ //Enenmy mass
+            y++;
+            while(y < 8){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                y++;
+            }
+        }
+
+        //right-down
+        x = point.x + 1, y = point.y + 1;
+        if (x < 8 && y < 8 && status[x][y] + turn == 1){ //Enenmy mass
+            x++, y++;
+            while(y < 8){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                x++, y++;
+            }
+        }
+
+        //down
+        x = point.x + 1, y = point.y;
+        if (x < 8 && status[x][y] + turn == 1){ //Enenmy mass
+            x++;
+            while(y < 8){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                x++;
+            }
+        }
+
+        //left-down
+        x = point.x + 1, y = point.y - 1;
+        if (x < 8 && y >= 0 && status[x][y] + turn == 1){ //Enenmy mass
+            x++, y--;
+            while(y < 8){
+                if (status[x][y] == -1){
+                    break;
+                }else if (status[x][y] == turn){
+                    direction.playable++;
+                    direction.left = turn;
+                    break;
+                }
+                x++, y--;
+            }
+        }
+
+        return direction;
+    }
+    /*
+    k = -1
+    */
     function negaSlope(){
         let pair = {
             my_mass : [],
@@ -94,6 +249,9 @@
         return pair;
     }
 
+    /*
+    k = 1
+    */
     function posiSlope(){
         let pair = {
             my_mass : [],
@@ -116,7 +274,7 @@
                 if (check_in > 0 && check_in < 3) {    //found playable mass
                     pair.empty_mass.pop();
                 }
-                m++, n++;
+                m--, n++;
             }
             check_in = 0;
             let x = i, y = 0;
@@ -203,6 +361,39 @@
 
     function setup() {
         initStatus();
+        let black_piece, white_piece, direction;
+
+        loop:
+        for (var i = 0; i < status.length; i++) {
+            for (var j = 0; j < status[i].length; j++) {
+                let point = new Point(i, j);
+                direction = judgePoint(point);
+                console.log("x: "+i+" y: "+j+"  ");
+                console.log(direction);
+                if (direction.playable > 0){
+                    if (direction.turn == BLACK){
+                        black_piece = new Sprite(resources["images/black_T.png"].texture);
+                        app.stage.addChild(black_piece);
+                        black_piece.position.set(i*mass_size, j*mass_size);
+                    }else if (direction.turn == WHITE){
+                        white_piece = new Sprite(resources["images/white_T.png"].texture);
+                        app.stage.addChild(white_piece);
+                        white_piece.position.set(i*mass_size, j*mass_size);
+                    }
+                }
+            }
+        }
+        if (direction.playable > 0){
+            if (direction.turn == BLACK){
+                black_piece = new Sprite(resources["images/black_T.png"].texture);
+                app.stage.addChild(black_piece);
+                black_piece.position.set(i*mass_size, j*mass_size);
+            }else if (direction.turn == WHITE){
+                white_piece = new Sprite(resources["images/white_T.png"].texture);
+                app.stage.addChild(white_piece);
+                white_piece.position.set(i*mass_size, j*mass_size);
+            }
+        }
     }
 
 </script>
