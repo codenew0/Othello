@@ -4,27 +4,20 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.0.3/pixi.min.js"></script>
     <script>
-
-    class Piece {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-        }
-    };
     let status = [
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
-        [-1, -1, -1,  0,  1, -1, -1, -1],
-        [-1, -1, -1,  1,  0, -1, -1, -1],
+        [-1, -1, -1, WHITE, BLACK, -1, -1, -1],
+        [-1, -1, -1, BLACK, WHITE, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1],
         [-1, -1, -1, -1, -1, -1, -1, -1]
     ];
     const WHITE = 0, BLACK = 1;
+    var turn = BLACK;
     let white_pieces = [];
     let black_pieces = [];
-    let turn = BLACK;
     let mass_size = 100;
 
     let Application = PIXI.Application,
@@ -33,7 +26,8 @@
     resources = PIXI.Loader.shared.resources,
     TextureCache = PIXI.utils.TextureCache,
     Sprite = PIXI.Sprite,
-    Rectangle = PIXI.Rectangle;
+    Rectangle = PIXI.Rectangle,
+    Point = PIXI.Point;
 
     let app = new Application({
         width: 800,
@@ -52,6 +46,100 @@
         "images/black.png"
     ])
     .load(setup);
+
+    function negaSlope(){
+        let pair = {
+            my_mass : [],
+            empty_mass : []
+        };
+        let check_in = 0;
+        for (var i = status.length - 3; i >= 0; i--) {
+            let m = i, n = 0;
+            while (m < 8){
+                if (status[n][m] < 0){  //find empty mass (E)
+                    check_in = 1;
+                    pair.empty_mass[empty_mass.length] = new Point(n, m);
+                }
+                if (check_in == 1 && status[n][m] != turn){     //empty mass -> enemy mass (EX)
+                    check_in = 2;
+                }else if (check_in == 2 && status[n][m] == turn){ //empty mass -> enemy mass -> my mass(EXXXO)
+                    check_in = 3;
+                    pair.my_mass[my_mass.length] = new Point(n, m);
+                }
+                if (check_in > 0 && check_in < 3) {    //found playable mass
+                    pair.empty_mass.pop();
+                }
+                m++, n++;
+            }
+            check_in = 0;
+            let x = i, y = 0;
+            while (x < 8){
+                if (status[x][y] < 0){  //find empty mass (E)
+                    check_in = 1;
+                    pair.empty_mass[empty_mass.length] = new Point(x, y);
+                }
+                if (check_in == 1 && status[x][y] != turn){     //empty mass -> enemy mass (EX)
+                    check_in = 2;
+                }else if (check_in == 2 && status[x][y] == turn){ //empty mass -> enemy mass -> my mass(EXXXO)
+                    check_in = 3;
+                    pair.my_mass[my_mass.length] = new Point(x, y);
+                }
+                if (check_in > 0 && check_in < 3) {    //found playable mass
+                    pair.empty_mass.pop();
+                }
+                x++, y++;
+            }
+            check_in = 0;
+        }
+        return pair;
+    }
+
+    function posiSlope(){
+        let pair = {
+            my_mass : [],
+            empty_mass : []
+        };
+        let check_in = 0;
+        for (var i = 3; i < status.length; i++) {
+            let m = i, n = 0;
+            while (m >= 0){
+                if (status[n][m] < 0){  //find empty mass (E)
+                    check_in = 1;
+                    pair.empty_mass[empty_mass.length] = new Point(n, m);
+                }
+                if (check_in == 1 && status[n][m] != turn){     //empty mass -> enemy mass (EX)
+                    check_in = 2;
+                }else if (check_in == 2 && status[n][m] == turn){ //empty mass -> enemy mass -> my mass(EXXXO)
+                    check_in = 3;
+                    pair.my_mass[my_mass.length] = new Point(n, m);
+                }
+                if (check_in > 0 && check_in < 3) {    //found playable mass
+                    pair.empty_mass.pop();
+                }
+                m++, n++;
+            }
+            check_in = 0;
+            let x = i, y = 0;
+            while (x < 8){
+                if (status[x][y] < 0){  //find empty mass (E)
+                    check_in = 1;
+                    pair.empty_mass[empty_mass.length] = new Point(x, y);
+                }
+                if (check_in == 1 && status[x][y] != turn){     //empty mass -> enemy mass (EX)
+                    check_in = 2;
+                }else if (check_in == 2 && status[x][y] == turn){ //empty mass -> enemy mass -> my mass(EXXXO)
+                    check_in = 3;
+                    pair.my_mass[my_mass.length] = new Point(x, y);
+                }
+                if (check_in > 0 && check_in < 3) {    //found playable mass
+                    pair.empty_mass.pop();
+                }
+                x++, y++;
+            }
+            check_in = 0;
+        }
+        return pair;
+    }
 
     function printArray(arr){
         for (var i = 0; i < arr.length; i++) {
