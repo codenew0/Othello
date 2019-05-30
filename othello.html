@@ -18,6 +18,7 @@
     var turn = BLACK;
     let white_pieces = [];
     let black_pieces = [];
+    let trans_pieces = [];
     let mass_size = 100;
 
     let Application = PIXI.Application,
@@ -314,13 +315,47 @@
         }
     }
 
+    function removeTransPieces(){
+        let length = trans_pieces.length;
+        for (let i = 0; i < length; i++) {
+            app.stage.removeChild(trans_pieces.pop());
+        }
+    }
+
+    function showTransPieces(){
+        let direction;
+
+        removeTransPieces();
+        for (let i = 0; i < status.length; i++) {
+            for (let j = 0; j < status[i].length; j++) {
+                let point = new Point(i, j);
+                direction = judgePoint(point);
+                // console.log("x: "+i+" y: "+j+"  ");
+                // console.log(direction);
+                if (direction.playable > 0){
+                    if (direction.turn == BLACK){
+                        let black_piece = new Sprite(resources["images/black_T.png"].texture);
+                        trans_pieces.push(black_piece);
+                        app.stage.addChild(black_piece);
+                        black_piece.position.set(i*mass_size, j*mass_size);
+                    }else if (direction.turn == WHITE){
+                        let white_piece = new Sprite(resources["images/white_T.png"].texture);
+                        trans_pieces.push(white_piece);
+                        app.stage.addChild(white_piece);
+                        white_piece.position.set(i*mass_size, j*mass_size);
+                    }
+                }
+            }
+        }
+    }
+
     function Clicked(event) {
         const point = event.data.getLocalPosition(this.parent);
         let piece_pos = new PIXI.Point(Math.floor(point.x / 100), Math.floor(point.y / 100));
         if (has_piece(piece_pos)){
             return;
         }
-        console.log(piece_pos.x, piece_pos.y);
+        // console.log(piece_pos.x, piece_pos.y);
 
         if (turn == BLACK){
             black_pieces[black_pieces.length] = new Sprite(resources["images/black.png"].texture);
@@ -335,6 +370,7 @@
             //app.stage.removeChild(white_piece_poss[count-1]);
             turn = BLACK;
         }
+        showTransPieces();
     }
 
     function initStatus() {
@@ -361,39 +397,7 @@
 
     function setup() {
         initStatus();
-        let black_piece, white_piece, direction;
-
-        loop:
-        for (var i = 0; i < status.length; i++) {
-            for (var j = 0; j < status[i].length; j++) {
-                let point = new Point(i, j);
-                direction = judgePoint(point);
-                console.log("x: "+i+" y: "+j+"  ");
-                console.log(direction);
-                if (direction.playable > 0){
-                    if (direction.turn == BLACK){
-                        black_piece = new Sprite(resources["images/black_T.png"].texture);
-                        app.stage.addChild(black_piece);
-                        black_piece.position.set(i*mass_size, j*mass_size);
-                    }else if (direction.turn == WHITE){
-                        white_piece = new Sprite(resources["images/white_T.png"].texture);
-                        app.stage.addChild(white_piece);
-                        white_piece.position.set(i*mass_size, j*mass_size);
-                    }
-                }
-            }
-        }
-        if (direction.playable > 0){
-            if (direction.turn == BLACK){
-                black_piece = new Sprite(resources["images/black_T.png"].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(i*mass_size, j*mass_size);
-            }else if (direction.turn == WHITE){
-                white_piece = new Sprite(resources["images/white_T.png"].texture);
-                app.stage.addChild(white_piece);
-                white_piece.position.set(i*mass_size, j*mass_size);
-            }
-        }
+        showTransPieces();
     }
 
 </script>
