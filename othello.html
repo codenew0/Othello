@@ -280,23 +280,27 @@
 
     */
     function checkWinner() {
-        if (trans_pieces.length == 0) {
-            return 1 - turn;
-        }
         let white_n = 0, black_n = 0;
-        for (let i = 0; i < status.length; i++){
-            for (let j = 0; j < status[i].length; j++){
-                if (status[i][j] < 0){
-                    return -1;
+        if (trans_pieces.length == 0) {
+            // Check if can continue to play
+            turn = 1 - turn;
+            showTransPieces();
+            // trans_pieces has changed, check once again
+            if (trans_pieces.length == 0){
+                for (let i = 0; i < status.length; i++){
+                    for (let j = 0; j < status[i].length; j++){
+                        if (status[i][j] == BLACK){
+                            black_n++;
+                        }else if (status[i][j] == WHITE){
+                            white_n++;
+                        }
+                    }
                 }
-                if (status[i][j] == BLACK){
-                    black_n++;
-                }else{
-                    white_n++;
-                }
+                return black_n > white_n? BLACK : WHITE;
             }
+            return -1;
         }
-        return black_n > white_n? BLACK : WHITE;
+        return -1;
     }
 
     /*
