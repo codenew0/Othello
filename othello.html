@@ -3,6 +3,7 @@
 <title>Othello</title>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.0.3/pixi.min.js"></script>
+    <script src="computer.js"></script>
     <script>
     let status = [
         [-1, -1, -1, -1, -1, -1, -1, -1],
@@ -249,15 +250,13 @@
                 if (direction.playable > 0){
                     playable_pieces.push(direction);
                     if (direction.turn == BLACK){
-                        let black_piece = new Sprite(resources["images/black_T.png"].texture);
+                        let image = "images/black_T.png";
+                        let black_piece = showPiece(turn, new Point(i, j), image);
                         trans_pieces.push(black_piece);
-                        app.stage.addChild(black_piece);
-                        black_piece.position.set(i*mass_size, j*mass_size);
                     }else if (direction.turn == WHITE){
-                        let white_piece = new Sprite(resources["images/white_T.png"].texture);
+                        let image = "images/white_T.png";
+                        let white_piece = showPiece(turn, new Point(i, j), image);
                         trans_pieces.push(white_piece);
-                        app.stage.addChild(white_piece);
-                        white_piece.position.set(i*mass_size, j*mass_size);
                     }
                 }
             }
@@ -265,7 +264,6 @@
     }
 
     function checkPalyable(point) {
-        // console.log(point.x, point.y);
         for (let i = 0; i < playable_pieces.length; i++) {
             if (playable_pieces[i].coord.x == point.x && playable_pieces[i].coord.y == point.y){
                 return true;
@@ -336,17 +334,13 @@
         }
 
         for (var i = 0; i < playable_pieces.length; i++) {
-            // console.log("--------------------------");
-            // console.log(playable_pieces.length);
-            // console.log(playable_pieces[i]);
             if (point.x == playable_pieces[i].coord.x && point.y == playable_pieces[i].coord.y){
                 direction = playable_pieces[i];
                 break;
             }
         }
         let x = 0, y = 0;
-        // console.log(direction);
-        // console.log(turn);
+
         //left
         if (direction.left == 1 - turn){
             x = point.x, y = point.y - 1;
@@ -354,9 +348,7 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 y--;
             }
@@ -369,9 +361,7 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 x--, y--;
             }
@@ -384,9 +374,7 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 x--;
             }
@@ -399,9 +387,7 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 x--, y++;
             }
@@ -414,9 +400,7 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 y++;
             }
@@ -429,9 +413,7 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 x++, y++;
             }
@@ -444,9 +426,7 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 x++;
             }
@@ -459,15 +439,20 @@
                 if (status[x][y] == 1 - turn) {
                     break;
                 }
-                let black_piece = new Sprite(resources[image].texture);
-                app.stage.addChild(black_piece);
-                black_piece.position.set(x*mass_size, y*mass_size);
+                showPiece(turn, new Point(x, y), image);
                 status[x][y] = 1 - turn;
                 x++, y--;
             }
         }
     }
 
+    function showPiece(turn, point, image) {
+        let piece = new Sprite(resources[image].texture);
+        app.stage.addChild(piece);
+        piece.position.set(point.x*mass_size, point.y*mass_size);
+
+        return piece;
+    }
     /*
 
     Click Event
@@ -482,18 +467,14 @@
         }
 
         if (turn == BLACK){
-            black_pieces[black_pieces.length] = new Sprite(resources["images/black.png"].texture);
-            app.stage.addChild(black_pieces[black_pieces.length-1]);
+            image = "images/black.png";
+            black_pieces[black_pieces.length] = showPiece(BLACK, piece_pos, image);
             status[piece_pos.x][piece_pos.y] = turn;
-            black_pieces[black_pieces.length-1].position.set(piece_pos.x*mass_size, piece_pos.y*mass_size);
-            //app.stage.removeChild(black_piece_poss[count-1]);
             turn = WHITE;
         }else if (turn == WHITE){
-            white_pieces[white_pieces.length] = new Sprite(resources["images/white.png"].texture);
-            app.stage.addChild(white_pieces[white_pieces.length-1]);
+            image = "images/white.png";
+            white_pieces[black_pieces.length] = showPiece(WHITE, piece_pos, image);
             status[piece_pos.x][piece_pos.y] = turn;
-            white_pieces[white_pieces.length-1].position.set(piece_pos.x*mass_size, piece_pos.y*mass_size);
-            //app.stage.removeChild(white_piece_poss[count-1]);
             turn = BLACK;
         }
         reversePieces(piece_pos);
@@ -511,20 +492,13 @@
         board.interactive = true;
         board.on('click', Clicked);
 
-        white_pieces[0] = new Sprite(resources["images/white.png"].texture);
-        white_pieces[1] = new Sprite(resources["images/white.png"].texture);
-        black_pieces[0] = new Sprite(resources["images/black.png"].texture);
-        black_pieces[1] = new Sprite(resources["images/black.png"].texture);
+        let image_b = "images/black.png",
+            image_w = "images/white.png";
 
-        app.stage.addChild(white_pieces[0]);
-        app.stage.addChild(black_pieces[0]);
-        app.stage.addChild(white_pieces[1]);
-        app.stage.addChild(black_pieces[1]);
-
-        white_pieces[0].position.set(4*mass_size, 3*mass_size);
-        white_pieces[1].position.set(3*mass_size, 4*mass_size);
-        black_pieces[0].position.set(3*mass_size, 3*mass_size);
-        black_pieces[1].position.set(4*mass_size, 4*mass_size);
+        black_pieces[0] = showPiece(BLACK, new Point(3, 3), image_b);
+        black_pieces[1] = showPiece(BLACK, new Point(4, 4), image_b);
+        white_pieces[0] = showPiece(WHITE, new Point(4, 3), image_w);
+        white_pieces[1] = showPiece(WHITE, new Point(3, 4), image_w);
     }
 
     function setup() {
