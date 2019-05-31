@@ -62,6 +62,16 @@ loader
     ])
     .load(setup);
 
+const MOVE = [
+    [0, -1],   //Left
+    [-1, -1],   //Left-up
+    [-1, 0],   //Up
+    [-1, 1],   //Right-up
+    [0, 1],   //Right
+    [1, 1],   //Right-down
+    [1, 0],   //Down
+    [1, -1]    //Left-down
+];
 /*
 Judege if point can be put
 */
@@ -73,144 +83,26 @@ function judgePoint(point) {
         coord: new Point(-1, -1),
         turn: turn,
         playable: 0,
-        left: -1,
-        left_up: -1,
-        up: -1,
-        right_up: -1,
-        right: -1,
-        right_down: -1,
-        down: -1,
-        left_down: -1
+        move: []
     };
 
-    //left
-    let x = point.x, y = point.y - 1;
-    if (y >= 0 && status[x][y] + turn == 1) { //Enenmy mass
-        y--;
-        while (y >= 0) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.left = turn;
-                break;
+    for (let i = 0; i < MOVE.length; i++) {
+        let x = point.x + MOVE[i][0], y = point.y + MOVE[i][1];
+        if (x >= 0 && x < 8 && y >= 0 && y < 8 &&
+            status[x][y] + turn == 1) { //Enenmy mass
+            x += MOVE[i][0], y += MOVE[i][1];
+            while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                if (status[x][y] == -1) {
+                    break;
+                } else if (status[x][y] == turn) {
+                    direction.playable++;
+                    direction.move[i] = turn;
+                    break;
+                }
+                x += MOVE[i][0], y += MOVE[i][1];
             }
-            y--;
         }
     }
-
-    //left-up
-    x = point.x - 1, y = point.y - 1;
-    if (x >= 0 && y >= 0 && status[x][y] + turn == 1) { //Enenmy mass
-        x-- , y--;
-        while (x >= 0 && y >= 0) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.left_up = turn;
-                break;
-            }
-            x-- , y--;
-        }
-    }
-
-    //up
-    x = point.x - 1, y = point.y;
-    if (x >= 0 && status[x][y] + turn == 1) { //Enenmy mass
-        x--;
-        while (x >= 0) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.up = turn;
-                break;
-            }
-            x--;
-        }
-    }
-
-    //right-up
-    x = point.x - 1, y = point.y + 1;
-    if (x >= 0 && y < 8 && status[x][y] + turn == 1) { //Enenmy mass
-        x-- , y++;
-        while (x >= 0 && y < 8) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.right_up = turn;
-                break;
-            }
-            x-- , y++;
-        }
-    }
-
-    //right
-    x = point.x, y = point.y + 1;
-    if (y < 8 && status[x][y] + turn == 1) { //Enenmy mass
-        y++;
-        while (y < 8) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.right = turn;
-                break;
-            }
-            y++;
-        }
-    }
-
-    //right-down
-    x = point.x + 1, y = point.y + 1;
-    if (x < 8 && y < 8 && status[x][y] + turn == 1) { //Enenmy mass
-        x++ , y++;
-        while (y < 8 && x < 8) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.right_down = turn;
-                break;
-            }
-            x++ , y++;
-        }
-    }
-
-    //down
-    x = point.x + 1, y = point.y;
-    if (x < 8 && status[x][y] + turn == 1) { //Enenmy mass
-        x++;
-        while (x < 8) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.down = turn;
-                break;
-            }
-            x++;
-        }
-    }
-
-    //left-down
-    x = point.x + 1, y = point.y - 1;
-    if (x < 8 && y >= 0 && status[x][y] + turn == 1) { //Enenmy mass
-        x++ , y--;
-        while (x < 8 && y >= 0) {
-            if (status[x][y] == -1) {
-                break;
-            } else if (status[x][y] == turn) {
-                direction.playable++;
-                direction.left_down = turn;
-                break;
-            }
-            x++ , y--;
-        }
-    }
-
     if (direction.playable > 0) {
         direction.coord = new Point(point.x, point.y);
     }
@@ -310,7 +202,7 @@ function gameOver(winner) {
     }
     let message = new Text("Winner: " + text, style);
     message.x = app.stage.width / 2 - 100;
-    message.y = app.stage.height / 2 - 32;
+    message.y = app.stage.height / 2 - 100;
     app.stage.addChild(message);
 }
 
@@ -336,107 +228,17 @@ function reversePieces(point) {
     }
     let x = 0, y = 0;
 
-    //left
-    if (direction.left == 1 - turn) {
-        x = point.x, y = point.y - 1;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
+    for (let i = 0; i < MOVE.length; i++) {
+        if (direction.move[i] == 1 - turn) {
+            x = point.x + MOVE[i][0], y = point.y + MOVE[i][1];
+            for (let j = 0; j < 8; j++) {
+                if (status[x][y] == 1 - turn) {
+                    break;
+                }
+                showPiece(turn, new Point(x, y), image);
+                status[x][y] = 1 - turn;
+                x += MOVE[i][0], y += MOVE[i][1];
             }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            y--;
-        }
-    }
-
-    //left-up
-    if (direction.left_up == 1 - turn) {
-        x = point.x - 1, y = point.y - 1;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
-            }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            x-- , y--;
-        }
-    }
-
-    //up
-    if (direction.up == 1 - turn) {
-        x = point.x - 1, y = point.y;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
-            }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            x--;
-        }
-    }
-
-    //right-up
-    if (direction.right_up == 1 - turn) {
-        x = point.x - 1, y = point.y + 1;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
-            }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            x-- , y++;
-        }
-    }
-
-    //right
-    if (direction.right == 1 - turn) {
-        x = point.x, y = point.y + 1;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
-            }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            y++;
-        }
-    }
-
-    //right-down
-    if (direction.right_down == 1 - turn) {
-        x = point.x + 1, y = point.y + 1;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
-            }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            x++ , y++;
-        }
-    }
-
-    //down
-    if (direction.down == 1 - turn) {
-        x = point.x + 1, y = point.y;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
-            }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            x++;
-        }
-    }
-
-    //left-down
-    if (direction.left_down == 1 - turn) {
-        x = point.x + 1, y = point.y - 1;
-        for (let i = 0; i < 8; i++) {
-            if (status[x][y] == 1 - turn) {
-                break;
-            }
-            showPiece(turn, new Point(x, y), image);
-            status[x][y] = 1 - turn;
-            x++ , y--;
         }
     }
 }
