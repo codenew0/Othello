@@ -8,9 +8,11 @@ class Attr {
 const BLACK = 0, WHITE = 1, EMPTY = -1;
 const PLAYER = 0, CPURANDOM = 1, CPUAI = 2;
 const MASSNUM = 8;
+
 var turn = BLACK;
 let trans_pieces = [];
 let playable_pieces = [];
+let background;
 let mass_size = 100;
 let cpumode = PLAYER;
 let pieces = new Array(MASSNUM);
@@ -61,7 +63,11 @@ loader
         "images/white.png",
         "images/black.png",
         "images/black_T.png",
-        "images/white_T.png"
+        "images/white_T.png",
+        "images/background.png",
+        "images/start.png",
+        "images/tmp0.png",
+        "images/tmp1.png"
     ])
     .load(setup);
 
@@ -281,7 +287,8 @@ function Clicked(event) {
     // printArray(status);
 }
 
-function initStatus() {
+function gameStart() {
+    app.stage.removeChild(background);
     let board = new Sprite(resources["images/board.png"].texture);
     app.stage.addChild(board);
     board.interactive = true;
@@ -298,11 +305,38 @@ function initStatus() {
     pieces[4][4].status = BLACK;
     pieces[4][3].status = WHITE;
     pieces[3][4].status = WHITE;
+
+    showTransPieces();
+}
+
+function initStatus() {
+    background = new Sprite(resources["images/background.png"].texture);
+    app.stage.addChild(background);
+
+    let start_button = new Sprite(resources["images/start.png"].texture);
+    app.stage.addChild(start_button);
+    start_button.interactive = true;
+    start_button.buttonMode = true;
+    start_button.position.set(250, 200);
+    start_button.on('click', gameStart);
+
+    let mode_button = new Sprite(resources["images/tmp0.png"].texture);
+    app.stage.addChild(mode_button);
+    mode_button.interactive = true;
+    mode_button.buttonMode = true;
+    mode_button.position.set(250, 400);
+    start_button.on('click', mode_button);
+
+    let ranking_button = new Sprite(resources["images/tmp1.png"].texture);
+    app.stage.addChild(ranking_button);
+    ranking_button.interactive = true;
+    ranking_button.buttonMode = true;
+    ranking_button.position.set(250, 600);
+    start_button.on('click', mode_button);
 }
 
 function setup() {
     initStatus();
-    showTransPieces();
     if (cpumode == CPURANDOM) {
         CPURandomPlay(playable_pieces, BLACK);
     } else if (cpumode == CPUAI) {
