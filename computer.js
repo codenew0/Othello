@@ -11,16 +11,17 @@ function CPURandomPlay(playable_pieces, cpu) {
   let piece_pos = playable_pieces[r].coord;
 
   if (cpu == BLACK) {
-    showPiece(BLACK, piece_pos, "images/black.png");
+    pieces[piece_pos.x][piece_pos.y].sprite = showPiece(piece_pos, "images/black.png");
+    turn = 1 - turn;
     reversePieces(piece_pos);
     removeTransPieces();
-    status[piece_pos.x][piece_pos.y] = BLACK;
-    turn = WHITE;
+    pieces[piece_pos.x][piece_pos.y].status = BLACK;
   } else if (cpu == WHITE) {
-    showPiece(WHITE, piece_pos, "images/white.png");
+    pieces[piece_pos.x][piece_pos.y].sprite = showPiece(piece_pos, "images/white.png");
+    turn = 1 - turn;
+    reversePieces(piece_pos);
     removeTransPieces();
-    status[piece_pos.x][piece_pos.y] = WHITE;
-    turn = BLACK;
+    pieces[piece_pos.x][piece_pos.y].status = WHITE;
   }
   console.log(piece_pos);
   showTransPieces();

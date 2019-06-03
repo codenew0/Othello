@@ -10,11 +10,12 @@ const PLAYER = 0, CPURANDOM = 1, CPUAI = 2;
 const MASSNUM = 8;
 
 var turn = BLACK;
+let clicked = 0;
 let trans_pieces = [];
 let playable_pieces = [];
-let background;
+let welcome_scene, game_scene, mode_scene;
 let mass_size = 100;
-let cpumode = PLAYER;
+let player = new Array(2);
 let pieces = new Array(MASSNUM);
 for (let i = 0; i < MASSNUM; i++) {
     pieces[i] = new Array(MASSNUM);
@@ -66,8 +67,12 @@ loader
         "images/white_T.png",
         "images/background.png",
         "images/start.png",
-        "images/tmp0.png",
-        "images/tmp1.png"
+        "images/mode.png",
+        "images/ranking.png",
+        "images/player.png",
+        "images/cpurandom.png",
+        "images/cpuai.png",
+        "images/chose.png"
     ])
     .load(setup);
 
@@ -128,7 +133,7 @@ function printArray(arr) {
 function removeTransPieces() {
     let length = trans_pieces.length;
     for (let i = 0; i < length; i++) {
-        app.stage.removeChild(trans_pieces.pop());
+        game_scene.removeChild(trans_pieces.pop());
         playable_pieces.pop();
     }
 }
@@ -207,7 +212,7 @@ function gameOver(winner) {
     let message = new Text("Winner: " + text, style);
     message.x = app.stage.width / 2 - 100;
     message.y = app.stage.height / 2 - 100;
-    app.stage.addChild(message);
+    game_scene.addChild(message);
 }
 
 /*
@@ -216,18 +221,21 @@ REVERSE
 function reversePieces(point) {
     let image;
     let direction;
+
     if (turn == WHITE) {
         image = "images/black.png";
     } else {
         image = "images/white.png";
     }
 
+    //Search the movement of the point
     for (var i = 0; i < playable_pieces.length; i++) {
         if (point.x == playable_pieces[i].coord.x && point.y == playable_pieces[i].coord.y) {
             direction = playable_pieces[i];
             break;
         }
     }
+
     let x = 0, y = 0;
 
     for (let i = 0; i < MOVE.length; i++) {
@@ -247,7 +255,7 @@ function reversePieces(point) {
 
 function showPiece(point, image) {
     let piece = new Sprite(resources[image].texture);
-    app.stage.addChild(piece);
+    game_scene.addChild(piece);
     piece.position.set(point.x * mass_size, point.y * mass_size);
 
     return piece;
@@ -255,7 +263,7 @@ function showPiece(point, image) {
 /*
 Click Event
 */
-function Clicked(event) {
+function Click(event) {
     const point = event.data.getLocalPosition(this.parent);
     let piece_pos = new PIXI.Point(Math.floor(point.x / 100), Math.floor(point.y / 100));
     // console.log(piece_pos);
@@ -274,25 +282,23 @@ function Clicked(event) {
     reversePieces(piece_pos);
     showTransPieces();
 
-    if (cpumode == CPURANDOM) {
-        CPURandomPlay(playable_pieces, turn);
-    } else if (cpumode == CPUAI) {
-        CPUAIPlay();
-    }
-
     let winner = checkWinner();
     if (winner >= 0) {
         gameOver(winner);
     }
+
+    // event.currentTarget.off('click');
     // printArray(status);
 }
 
 function gameStart() {
-    app.stage.removeChild(background);
+    app.stage.removeChild(welcome_scene);
+
+    player[0] = PLAYER, player[1] = CPURANDOM;
+
     let board = new Sprite(resources["images/board.png"].texture);
-    app.stage.addChild(board);
-    board.interactive = true;
-    board.on('click', Clicked);
+    game_scene.addChild(board);
+
 
     let image_b = "images/black.png",
         image_w = "images/white.png";
@@ -309,37 +315,138 @@ function gameStart() {
     showTransPieces();
 }
 
+let choice = new Array(2);
+function modeChoose(event) {
+    let chose = event.currentTarget;
+    let img = "images/chose.png";
+    let i = -1;
+    if (chose.x == 150) {   //Player1
+        i = 0;
+    } else if (chose.x == 450) { //Player2
+        i = 1;
+    }
+    if (choice[i] != null) {
+        mode_scene.removeChild(choice[i]);
+    }
+    choice[i] = new Sprite(resources[img].texture);
+    mode_scene.addChild(choice[i]);
+    choice[i].position.set(chose.x - 25, chose.y - 25);
+    if (chose.y == 230) {
+        player[i] = PLAYER;
+    } else if (chose.y == 350) {
+        player[i] = CPURANDOM;
+    } else if (chose.y == 470) {
+        player[i] = CPUAI;
+    }
+}
+
+function modeStart(event) {
+
+}
+
+function gameMode() {
+    //UI
+    app.stage.removeChild(welcome_scene);
+
+    mode_scene = new Container();
+    app.stage.addChild(mode_scene);
+
+    let background = new Sprite(resources["images/background.png"].texture);
+    mode_scene.addChild(background);
+
+    let player1 = new Text("PLAYER1", style);
+    player1.x = 170;
+    player1.y = 150;
+    mode_scene.addChild(player1);
+    let player2 = new Text("PLAYER2", style);
+    player2.x = 470;
+    player2.y = 150;
+    mode_scene.addChild(player2);
+
+    let mode = new Array(6);
+    let img = ["images/player.png", "images/cpurandom.png", "images/cpuai.png"];
+    //150,230 400,230 150,350 400,350 150,470 400,470
+    for (let i = 0; i < mode.length; i++) {
+        mode[i] = new Sprite(resources[img[Math.floor(i / 2)]].texture);
+        mode_scene.addChild(mode[i]);
+        mode[i].interactive = true;
+        mode[i].buttonMode = true;
+        if (i % 2 == 0) {
+            mode[i].position.set(150, 230 + 120 * Math.floor(i / 2));
+        } else {
+            mode[i].position.set(450, 230 + 120 * Math.floor(i / 2));
+        }
+        mode[i].on('click', modeChoose);
+    }
+
+    let start = new Sprite(resources["images/start.png"].texture);
+    mode_scene.addChild(start);
+    start.interactive = true;
+    start.buttonMode = true;
+    start.position.set(250, 600);
+    start.on('click', modeStart);
+}
+
+function gameRanking() {
+
+}
+
 function initStatus() {
-    background = new Sprite(resources["images/background.png"].texture);
-    app.stage.addChild(background);
+    game_scene = new Container();
+    app.stage.addChild(game_scene);
+
+    welcome_scene = new Container();
+    app.stage.addChild(welcome_scene);
+
+    let background = new Sprite(resources["images/background.png"].texture);
+    welcome_scene.addChild(background);
 
     let start_button = new Sprite(resources["images/start.png"].texture);
-    app.stage.addChild(start_button);
+    welcome_scene.addChild(start_button);
     start_button.interactive = true;
     start_button.buttonMode = true;
-    start_button.position.set(250, 200);
+    start_button.position.set(250, 150);
     start_button.on('click', gameStart);
 
-    let mode_button = new Sprite(resources["images/tmp0.png"].texture);
-    app.stage.addChild(mode_button);
+    let mode_button = new Sprite(resources["images/mode.png"].texture);
+    welcome_scene.addChild(mode_button);
     mode_button.interactive = true;
     mode_button.buttonMode = true;
-    mode_button.position.set(250, 400);
-    start_button.on('click', mode_button);
+    mode_button.position.set(250, 350);
+    mode_button.on('click', gameMode);
 
-    let ranking_button = new Sprite(resources["images/tmp1.png"].texture);
-    app.stage.addChild(ranking_button);
+    let ranking_button = new Sprite(resources["images/ranking.png"].texture);
+    welcome_scene.addChild(ranking_button);
     ranking_button.interactive = true;
     ranking_button.buttonMode = true;
-    ranking_button.position.set(250, 600);
-    start_button.on('click', mode_button);
+    ranking_button.position.set(250, 550);
+    ranking_button.on('click', gameRanking);
+
+    app.ticker.add(delta => gameLoop(delta));
+}
+
+function gameLoop() {
+    if (turn == BLACK) {
+        if (player[0] == PLAYER) {
+            game_scene.interactive = true;
+            game_scene.on('click', Click);
+        } else if (player[0] == CPURANDOM) {
+            CPURandomPlay(playable_pieces, BLACK);
+        } else if (player[0] == CPUAI) {
+            CPUAIPlay();
+        }
+    } else {
+        if (player[1] == PLAYER) {
+            game_scene.interactive = true;
+            game_scene.on('click', Click);
+        } else if (player[1] == CPURANDOM) {
+            CPURandomPlay(playable_pieces, WHITE);
+        } else if (player[1] == CPUAI) {
+            CPUAIPlay();
+        }
+    }
 }
 
 function setup() {
     initStatus();
-    if (cpumode == CPURANDOM) {
-        CPURandomPlay(playable_pieces, BLACK);
-    } else if (cpumode == CPUAI) {
-        CPUAIPlay();
-    }
 }
