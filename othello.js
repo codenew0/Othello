@@ -10,10 +10,10 @@ const PLAYER = 0, CPURANDOM = 1, CPUAI = 2;
 const MASSNUM = 8;
 
 var turn = BLACK;
-let clicked = 0;
 let trans_pieces = [];
 let playable_pieces = [];
 let welcome_scene, game_scene, mode_scene;
+let started = 0;
 let mass_size = 100;
 let player = new Array(2);
 let pieces = new Array(MASSNUM);
@@ -293,8 +293,11 @@ function Click(event) {
 
 function gameStart() {
     app.stage.removeChild(welcome_scene);
+    app.stage.removeChild(mode_scene);
 
-    player[0] = PLAYER, player[1] = CPURANDOM;
+    if (player[0] == null) {
+        player[0] = PLAYER, player[1] = CPURANDOM;
+    }
 
     let board = new Sprite(resources["images/board.png"].texture);
     game_scene.addChild(board);
@@ -307,12 +310,14 @@ function gameStart() {
     pieces[4][4].sprite = showPiece(new Point(4, 4), image_b);
     pieces[4][3].sprite = showPiece(new Point(4, 3), image_w);
     pieces[3][4].sprite = showPiece(new Point(3, 4), image_w);
+
     pieces[3][3].status = BLACK;
     pieces[4][4].status = BLACK;
     pieces[4][3].status = WHITE;
     pieces[3][4].status = WHITE;
 
     showTransPieces();
+    started = 1;
 }
 
 let choice = new Array(2);
@@ -341,7 +346,7 @@ function modeChoose(event) {
 }
 
 function modeStart(event) {
-
+    gameStart();
 }
 
 function gameMode() {
@@ -441,6 +446,7 @@ function gameLoop() {
             game_scene.on('click', Click);
         } else if (player[1] == CPURANDOM) {
             CPURandomPlay(playable_pieces, WHITE);
+            console.log("object");
         } else if (player[1] == CPUAI) {
             CPUAIPlay();
         }
