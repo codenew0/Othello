@@ -19,7 +19,7 @@ let playable_pieces = [];
 let welcome_scene, game_scene, mode_scene;
 let started = 0;
 let mass_size = 100;
-let player = [PLAYER, CPURANDOM];
+let player = [PLAYER, CPURANDOM, CPUAI];
 let pieces_sprite = new Array(MASSNUM);
 for (let i = 0; i < MASSNUM; i++) {
     pieces_sprite[i] = new Array(MASSNUM);
@@ -433,7 +433,7 @@ function gameLoop() {
         } else if (player[0] == CPURANDOM) {
             CPURandomPlay(playable_pieces, BLACK);
         } else if (player[0] == CPUAI) {
-            CPUAIPlay();
+            CPUAIPlay(playable_pieces, BLACK);
         }
     } else {
         if (player[1] == PLAYER) {
@@ -442,7 +442,7 @@ function gameLoop() {
         } else if (player[1] == CPURANDOM) {
             CPURandomPlay(playable_pieces, WHITE);
         } else if (player[1] == CPUAI) {
-            CPUAIPlay();
+            CPUAIPlay(playable_pieces, WHITE);
         }
     }
 }
